@@ -170,7 +170,6 @@ export default function QueryPage() {
         {result && (
           <div className="mt-6 p-4 rounded-xl border border-emerald-200/50 dark:border-emerald-800/50 bg-emerald-50/60 dark:bg-emerald-900/20">
             <h4 className="font-semibold mb-2 text-emerald-900 dark:text-emerald-100">Generated SQL</h4>
-            {/* <pre className="overflow-auto text-sm p-3 rounded bg-white/60 dark:bg-gray-800/60">{result.sql ?? '—'}</pre> */}
             <div className="bg-slate-50/60 dark:bg-slate-800/60 rounded-xl p-4 border border-slate-200/50 dark:border-slate-700/50">
               <code className="text-sm text-slate-800 dark:text-slate-200 break-all">
                 {displaySql || 'No SQL generated'}

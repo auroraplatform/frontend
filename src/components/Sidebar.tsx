@@ -19,39 +19,31 @@ interface SidebarProps {
 }
 
 export function Sidebar({ className = '' }: SidebarProps) {
-  const [isCollapsed, setIsCollapsed] = useState(false)
-  const [theme, setTheme] = useState<'light' | 'dark'>('light')
+  const [isCollapsed, setIsCollapsed] = useState<boolean>(() => {
+    if (typeof window === 'undefined') return false
+    const saved = localStorage.getItem('sidebar-collapsed')
+    return saved ? JSON.parse(saved) : false
+  })
+  const [theme, setTheme] = useState<'light' | 'dark'>(() => {
+    if (typeof window === 'undefined') return 'light'
+    return (localStorage.getItem('theme') as 'light' | 'dark') ?? 'light'
+  })
   const pathname = usePathname()
+  const [animate, setAnimate] = useState(false)
+  const [mounted, setMounted] = useState(false)
 
-  // Initialize theme and sidebar state on client side
   useEffect(() => {
-    console.log('Sidebar useEffect running...')
-    
-    // Load theme from localStorage
-    const savedTheme = localStorage.getItem('theme') as 'light' | 'dark'
-    console.log('Saved theme from localStorage:', savedTheme)
-    
-    if (savedTheme) {
-      setTheme(savedTheme)
-      // Apply theme to HTML element
-      document.documentElement.classList.remove('light', 'dark')
-      document.documentElement.classList.add(savedTheme)
-      console.log('Applied theme to HTML element:', savedTheme)
-    } else {
-      // Apply light theme by default if no theme is saved
-      document.documentElement.classList.remove('light', 'dark')
-      document.documentElement.classList.add('light')
-      console.log('Applied default light theme to HTML element')
-    }
-    
-    // Load sidebar state from localStorage
-    const savedState = localStorage.getItem('sidebar-collapsed')
-    console.log('Saved sidebar state from localStorage:', savedState)
-    
-    if (savedState !== null) {
-      setIsCollapsed(JSON.parse(savedState))
-    }
+    setAnimate(true)
   }, [])
+
+  useEffect(() => {
+    setMounted(true)
+  }, [])
+
+  useEffect(() => {
+    document.documentElement.classList.remove('light', 'dark')
+    document.documentElement.classList.add(theme)
+  }, [theme])
 
   const toggleCollapse = () => {
     console.log('toggleCollapse called, current state:', isCollapsed)
@@ -97,8 +89,7 @@ export function Sidebar({ className = '' }: SidebarProps) {
   ]
 
   return (
-    <div className={`relative bg-gradient-to-b from-slate-900 via-slate-800 to-slate-900 border-r border-slate-700/50 transition-all duration-500 ease-out ${isCollapsed ? 'w-20' : 'w-72'} ${className}`}>
-      {/* Header */}
+    <div className={`relative bg-gradient-to-b from-slate-900 via-slate-800 to-slate-900 border-r border-slate-700/50 ${animate ? 'transition-all duration-500 ease-out' : ''} ${isCollapsed ? 'w-20' : 'w-72'} ${className}`}>      {/* Header */}
       <div className="p-4 border-b border-slate-700/30">
         <div className={`flex items-center ${isCollapsed ? 'justify-center' : 'justify-between'}`}>
           <div className="flex items-center space-x-3">
@@ -165,11 +156,9 @@ export function Sidebar({ className = '' }: SidebarProps) {
           } bg-slate-800/50 hover:bg-slate-700/50 border border-slate-600/30 hover:border-slate-500/50 hover:scale-105`}
         >
           <div className="p-2 rounded-lg bg-gradient-to-br from-amber-500 to-orange-600 text-white">
-            {theme === 'dark' ? (
-              <Sun className="w-4 h-4" />
-            ) : (
-              <Moon className="w-4 h-4" />
-            )}
+            {mounted
+                ? (theme === 'dark' ? <Sun className="w-4 h-4" /> : <Moon className="w-4 h-4" />)
+                : <span className="w-4 h-4" />}
           </div>
           {!isCollapsed && (
             <span className="text-slate-300 font-medium">
