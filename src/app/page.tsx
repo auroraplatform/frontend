@@ -15,7 +15,7 @@ export default function HomePage() {
       <div className="text-center text-white">
         <div className="animate-spin rounded-full h-32 w-32 border-b-4 border-white mx-auto mb-4"></div>
         <p className="text-2xl font-bold">Redirecting...</p>
-        <p className="text-lg opacity-90">Your beautiful app is loading!</p>
+        <p className="text-lg opacity-90">Aurora web application is loading!</p>
       </div>
     </div>
   )

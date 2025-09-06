@@ -2,10 +2,40 @@
 
 import { Layout } from '@/components/Layout'
 import { BarChart3, ExternalLink, TrendingUp, PieChart, Activity } from 'lucide-react'
+import { useState } from 'react'
 
 export default function VisualizePage() {
-  const handleGrafanaConnect = () => {
-    console.log('Connecting to Grafana...')
+  const [grafanaUrl, setGrafanaUrl] = useState<string | null>(null)
+  const [isLoading, setIsLoading] = useState(false)
+  const [error, setError] = useState<string | null>(null)
+
+  const handleGrafanaConnect = async () => {
+    setIsLoading(true)
+    setError(null)
+    
+    try {
+      // If we already have the URL, open it directly
+      if (grafanaUrl) {
+        window.open(grafanaUrl, '_blank')
+        return
+      }
+
+      // Fetch Grafana URL from backend
+      const response = await fetch('/api/grafana-url')
+      const data = await response.json()
+      
+      if (data.success && data.grafana_url) {
+        setGrafanaUrl(data.grafana_url)
+        window.open(data.grafana_url, '_blank')
+      } else {
+        setError('Failed to retrieve Grafana URL')
+      }
+    } catch (err) {
+      setError('Failed to connect to Grafana')
+      console.error('Grafana connection error:', err)
+    } finally {
+      setIsLoading(false)
+    }
   }
 
   return (
@@ -20,7 +50,7 @@ export default function VisualizePage() {
             Visualize
           </h1>
           <p className="text-xl text-slate-600 dark:text-slate-300 max-w-2xl mx-auto">
-            Create beautiful visualizations and dashboards for your data with enterprise-grade analytics
+            Create beautiful visualizations and dashboards for your data
           </p>
         </div>
 
@@ -38,22 +68,48 @@ export default function VisualizePage() {
               <p className="text-lg text-slate-600 dark:text-slate-300 leading-relaxed">
                 This will securely connect you to Grafana dashboard, ready for custom visualizations of your data.
               </p>
+
+               {/* Error message */}
+               {error && (
+                <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg p-4">
+                  <p className="text-red-700 dark:text-red-300">{error}</p>
+                </div>
+              )}
+              
+              {/* Success message */}
+              {grafanaUrl && (
+                <div className="bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-lg p-4">
+                  <p className="text-green-700 dark:text-green-300">
+                    Grafana URL: <span className="font-mono text-sm">{grafanaUrl}</span>
+                  </p>
+                </div>
+              )}
             </div>
 
             <button
               onClick={handleGrafanaConnect}
+              disabled={isLoading}
               className="inline-flex items-center px-10 py-4 bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white font-semibold rounded-2xl transition-all duration-200 hover:scale-105 shadow-2xl shadow-purple-500/25 focus:ring-2 focus:ring-purple-500/50 focus:ring-offset-2 dark:focus:ring-offset-gray-900"
             >
-              <ExternalLink className="w-5 h-5 mr-3" />
-              Connect to Grafana
+              {isLoading ? (
+                <>
+                  <div className="w-5 h-5 mr-3 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                  Connecting...
+                </>
+              ) : (
+                <>
+                  <ExternalLink className="w-5 h-5 mr-3" />
+                  Connect to Grafana
+                </>
+              )}
             </button>
           </div>
         </div>
 
         {/* Features */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-          <div className="group bg-white/70 dark:bg-gray-900/70 backdrop-blur-xl rounded-3xl shadow-xl border border-white/20 dark:border-gray-800/20 p-8 hover:scale-105 transition-all duration-300">
-            <div className="w-16 h-16 bg-gradient-to-br from-emerald-500 to-teal-600 rounded-2xl flex items-center justify-center mb-6 group-hover:scale-110 transition-transform duration-300">
+          <div className="group bg-white/70 dark:bg-gray-900/70 backdrop-blur-xl rounded-3xl shadow-xl border border-white/20 dark:border-gray-800/20 p-8 transition-all duration-300">
+            <div className="w-16 h-16 bg-gradient-to-br from-emerald-500 to-teal-600 rounded-2xl flex items-center justify-center mb-6 transition-transform duration-300">
               <BarChart3 className="w-8 h-8 text-white" />
             </div>
             <h3 className="text-xl font-bold text-slate-900 dark:text-white mb-4">
@@ -64,8 +120,8 @@ export default function VisualizePage() {
             </p>
           </div>
 
-          <div className="group bg-white/70 dark:bg-gray-900/70 backdrop-blur-xl rounded-3xl shadow-xl border border-white/20 dark:border-gray-800/20 p-8 hover:scale-105 transition-all duration-300">
-            <div className="w-16 h-16 bg-gradient-to-br from-purple-500 to-pink-600 rounded-2xl flex items-center justify-center mb-6 group-hover:scale-110 transition-transform duration-300">
+          <div className="group bg-white/70 dark:bg-gray-900/70 backdrop-blur-xl rounded-3xl shadow-xl border border-white/20 dark:border-gray-800/20 p-8 transition-all duration-300">
+            <div className="w-16 h-16 bg-gradient-to-br from-purple-500 to-pink-600 rounded-2xl flex items-center justify-center mb-6 transition-transform duration-300">
               <TrendingUp className="w-8 h-8 text-white" />
             </div>
             <h3 className="text-xl font-bold text-slate-900 dark:text-white mb-4">
@@ -76,8 +132,8 @@ export default function VisualizePage() {
             </p>
           </div>
 
-          <div className="group bg-white/70 dark:bg-gray-900/70 backdrop-blur-xl rounded-3xl shadow-xl border border-white/20 dark:border-gray-800/20 p-8 hover:scale-105 transition-all duration-300">
-            <div className="w-16 h-16 bg-gradient-to-br from-orange-500 to-red-600 rounded-2xl flex items-center justify-center mb-6 group-hover:scale-110 transition-transform duration-300">
+          <div className="group bg-white/70 dark:bg-gray-900/70 backdrop-blur-xl rounded-3xl shadow-xl border border-white/20 dark:border-gray-800/20 p-8 transition-all duration-300">
+            <div className="w-16 h-16 bg-gradient-to-br from-orange-500 to-red-600 rounded-2xl flex items-center justify-center mb-6 transition-transform duration-300">
               <PieChart className="w-8 h-8 text-white" />
             </div>
             <h3 className="text-xl font-bold text-slate-900 dark:text-white mb-4">
